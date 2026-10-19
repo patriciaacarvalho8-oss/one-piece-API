@@ -1,28 +1,31 @@
+
+import "dotenv/config";
 import bcrypt from "bcrypt";
 import { prisma } from "../config/prisma";
 
 async function main() {
-    const funcionario = await prisma.funcionario.create({
-        data: {
-            nome: "admin",
-            email: "admin@gmail.com",
-            cargo: "admin",
-            cpf: "123456789",
-            nascimento: new Date("02/20/2010"),
-            endereco: "rua, 0",
-            telefone: 1234566787,
-            senha: bcrypt.hashSync("123456", +process.env.BCRYPT_RUNDS!),
-        },
-    });
+  const senhaHash = await bcrypt.hash("luffy123", 10);
 
-    console.info("Funcionario criado:", funcionario);
+  await prisma.usuario.upsert({
+    where: {
+      email: "admin@onepiece.com",
+    },
+    update: {},
+    create: {
+      nome: "Administrador",
+      email: "admin@onepiece.com",
+      senha: senhaHash,
+    },
+  });
+
+  console.log("Usuário criado com sucesso!");
 }
 
 main()
-  .catch((e) => {
-    console.error(e);
+  .catch((error) => {
+    console.error(error);
     process.exit(1);
   })
   .finally(async () => {
     await prisma.$disconnect();
-  })
+  });
